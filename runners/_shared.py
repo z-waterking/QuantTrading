@@ -41,8 +41,11 @@ def load_price(symbol: str, start: str, end: str, *, force: bool = False) -> pd.
     if df.empty:
         raise RuntimeError(f"yfinance returned no data for {symbol} {start}..{end}")
 
-    close = df["Close"].rename("close").dropna()
-    if isinstance(close, pd.DataFrame):  # multi-index when single ticker on new yfinance
-        close = close.iloc[:, 0]
+    # yfinance 新版返回 MultiIndex 列 (price_type, ticker)；统一拍平
+    if isinstance(df.columns, pd.MultiIndex):
+        df = df.xs(symbol, axis=1, level=1, drop_level=True)
+
+    close = df["Close"].dropna()
+    close.name = "close"
     close.to_frame().to_parquet(cache)
     return close
