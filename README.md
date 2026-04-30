@@ -1,66 +1,67 @@
 # QuantTrading
 
-个人量化交易系统骨架。**回测 / 模拟盘 / 实盘** 共用同一套策略代码，只切换执行后端。
+个人美股量化（精简版）。回测 / 模拟盘 / 实盘共用同一套策略代码。
 
-## 目录速览
+## 目录
 
-| 目录 | 作用 |
-|------|------|
-| `src/quant/core/` | 核心抽象：`Strategy` / `Broker` / `ExecutionEngine` / `Event` |
-| `src/quant/data/` | 行情数据接入（akshare / tushare / qmt / ccxt …） |
-| `src/quant/factors/` | 因子库 |
-| `src/quant/strategies/` | 策略实现（**一策略一目录** + 自带 README） |
-| `src/quant/backtest/` | 回测引擎 / vectorbt 适配 |
-| `src/quant/execution/` | 下单层：`BacktestExec` / `PaperExec` / `LiveExec` |
-| `src/quant/broker/` | 券商 API 封装 |
-| `src/quant/risk/` | 风控（仓位、止损、限额） |
-| `src/quant/portfolio/` | 组合层（多策略合成、净值） |
-| `src/quant/monitor/` | 实盘监控 / 报警 |
-| `src/quant/utils/` | 公共工具（日志、时间、IO） |
-| `configs/` | YAML 配置：`base.yaml` ← `env/{env}.yaml` ← `strategies/{name}.yaml` ← CLI |
-| `scripts/` | CLI 入口（不写业务，只拼对象） |
-| `notebooks/` | 研究 & 复盘 |
-| `data/` | 本地缓存（gitignore） |
-| `reports/` | 回测/实盘报告（实盘 equity 不入 git） |
-| `logs/` | 运行日志（gitignore） |
-| `tests/` | pytest |
+```
+QuantTrading/
+├── strategies/   # 策略：一文件一策略
+├── runners/      # 入口：backtest.py / paper.py / live.py
+├── configs/      # YAML 配置（每策略一份）
+├── data/         # yfinance 下载的行情缓存（gitignore）
+└── tests/
+```
 
 ## 快速开始
 
 ```powershell
-# 1. 创建虚拟环境（用 uv）
 cd F:\AAA_MyRepos\QuantTrading
 uv venv
 .venv\Scripts\Activate.ps1
-uv pip install -e .
+uv pip install -e ".[dev]"
 
-# 2. 复制 .env
-copy .env.example .env
-
-# 3. 跑一个示例回测
-python -m scripts.run_backtest --strategy ma_cross
-
-# 4. 模拟盘（接券商 sandbox 或本地实时撮合）
-python -m scripts.run_paper --strategy ma_cross
-
-# 5. 实盘（带二次确认）
-python -m scripts.run_live --strategy ma_cross
+# 跑示例：双均线策略回测 SPY
+python -m runners.backtest --config configs/ma_cross.yaml
 ```
 
-## 三种运行模式
+第一次跑会从 yfinance 下载行情到 `data/`，输出累计收益、年化、最大回撤、夏普。
 
-| 模式 | Broker | 行情 | 订单 |
-|------|--------|------|------|
-| `backtest` | `BacktestBroker` | 历史数据 | 历史撮合 |
-| `paper` | `PaperBroker` | **真实实时行情** | 本地撮合，不真下单 |
-| `live` | `LiveBroker`（QMT/IB/CCXT） | 真实实时行情 | **真实下单** |
+## 三种模式
 
-策略代码不区分模式。切换只改 `--env` 或 `configs/env/*.yaml`。
+| 模式 | 数据 | 下单 | 启动 |
+|------|------|------|------|
+| 回测 | yfinance 历史 | 本地撮合 | `python -m runners.backtest --config configs/ma_cross.yaml` |
+| 模拟盘 | 实时行情 | Alpaca paper 账户 | `python -m runners.paper --config configs/ma_cross.yaml` |
+| 实盘 | 实时行情 | Alpaca / IB 真实下单 | `python -m runners.live --config configs/ma_cross.yaml` |
 
-## 开发约定
+策略代码完全相同，只换 runner。
 
-- 包根：`from quant.xxx import ...`（src layout）
-- 配置覆盖顺序：`base.yaml` → `env/{env}.yaml` → `strategies/{name}.yaml` → CLI
-- 密钥：写 `.env`，代码用 `os.getenv` 读，永不入 git
-- 新策略：复制 `src/quant/strategies/ma_cross/` 改名即可
-- 提交前：`pytest -q` + `ruff check .`
+## 写新策略
+
+1. 复制 `strategies/ma_cross.py` 改名，实现：
+
+    ```python
+    def generate_signals(price: pd.Series, **params) -> pd.Series:
+        """返回与 price 对齐的 -1/0/1 信号。"""
+    ```
+
+2. 加一个 `configs/<name>.yaml`：
+
+    ```yaml
+    strategy: <name>
+    symbol: SPY
+    start: 2018-01-01
+    end: 2025-01-01
+    params:
+      fast: 20
+      slow: 60
+    ```
+
+## 需要注册什么
+
+- **回测**：什么都不用注册（yfinance 免费）
+- **模拟盘**：[Alpaca](https://alpaca.markets/) 注册 → 免费 paper account → 拿 API key
+- **实盘**：Alpaca 入金，或 Interactive Brokers 开户
+
+把 key 填到 `.env`（参考 `.env.example`），代码 `os.getenv` 读。

@@ -1,0 +1,7 @@
+strategy: ma_cross
+symbol: SPY
+start: 2018-01-01
+end: 2025-01-01
+params:
+  fast: 20
+  slow: 60

@@ -1,30 +1,28 @@
 [project]
-name = "quant"
+name = "quanttrading"
 version = "0.0.1"
-description = "Personal quant trading system: shared strategy code across backtest / paper / live."
+description = "Personal US-equity quant: shared strategy across backtest / paper / live."
 requires-python = ">=3.11"
 readme = "README.md"
 dependencies = [
     "pandas",
     "numpy",
-    "pyarrow",
+    "yfinance",
     "pyyaml",
     "python-dotenv",
-    "loguru",
+    "matplotlib",
 ]
 
 [project.optional-dependencies]
-backtest = ["vectorbt"]
-data = ["akshare", "tushare"]
-crypto = ["ccxt"]
-dev = ["pytest", "pytest-asyncio", "ruff", "ipykernel"]
+broker = ["alpaca-py"]
+dev = ["pytest", "ruff"]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/quant"]
+packages = ["strategies", "runners"]
 
 [tool.ruff]
 line-length = 100

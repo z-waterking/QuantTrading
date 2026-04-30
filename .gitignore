@@ -1,4 +1,4 @@
-# Python / uv
+# Python
 .venv/
 __pycache__/
 *.py[cod]
@@ -7,35 +7,20 @@ build/
 dist/
 .pytest_cache/
 .ruff_cache/
-.mypy_cache/
 
-# Notebooks
-.ipynb_checkpoints/
-
-# 本地数据（行情/因子缓存，不入 git）
-data/raw/
-data/processed/
-data/factors/
-
-# 日志（不入 git）
-logs/
-*.log
-
-# 实盘资金曲线（敏感，不入 git）
-reports/equity/
+# 行情缓存
+data/
 
 # 密钥
 .env
 .env.*
 !.env.example
 
-# 编辑器
+# 编辑器/系统
 .vscode/
 .idea/
-
-# OS
 .DS_Store
 Thumbs.db
 
-# 始终保留 .gitkeep（即使在被忽略的目录里）
+# 始终保留 .gitkeep
 !**/.gitkeep
