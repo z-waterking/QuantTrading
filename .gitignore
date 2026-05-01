@@ -13,6 +13,7 @@ data/
 
 # 运行输出
 *.out
+reports/run_*/
 
 # 密钥
 .env

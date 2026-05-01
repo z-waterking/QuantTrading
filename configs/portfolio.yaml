@@ -1,0 +1,40 @@
+# 多策略 paper 跑批配置
+#
+# 4 个策略各分配 10000 美元，分别交易不同的 ETF，
+# 避免在 Alpaca 单一 paper 账户里互相覆盖持仓。
+run:
+  duration_hours: 14         # 总跑多久（开盘前启动正好覆盖一天美股）
+  interval_minutes: 15       # 每隔多久检查并对齐一次
+  total_equity: 40000
+
+strategies:
+  - name: ma_cross_spy
+    strategy: ma_cross
+    symbol: SPY
+    start: 2024-01-01
+    params:
+      fast: 20
+      slow: 60
+
+  - name: rsi_qqq
+    strategy: rsi_meanrev
+    symbol: QQQ
+    start: 2024-01-01
+    params:
+      period: 14
+      low: 30
+      high: 70
+
+  - name: momentum_iwm
+    strategy: momentum
+    symbol: IWM
+    start: 2023-01-01
+    params:
+      lookback: 60
+
+  - name: donchian_dia
+    strategy: donchian
+    symbol: DIA
+    start: 2024-01-01
+    params:
+      lookback: 20
