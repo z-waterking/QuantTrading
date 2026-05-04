@@ -1,0 +1,7 @@
+strategy: bollinger_meanrev
+symbol: SPY
+start: 2018-01-01
+end: 2025-01-01
+params:
+  window: 20
+  num_std: 2.0

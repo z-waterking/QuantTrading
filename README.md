@@ -25,7 +25,7 @@ uv pip install -e ".[dev]"
 python -m runners.backtest --config configs/ma_cross.yaml
 ```
 
-第一次跑会从 yfinance 下载行情到 `data/`，输出累计收益、年化、最大回撤、夏普。
+第一次跑会从 yfinance 下载行情到 `data/`，输出累计收益、年化、最大回撤、夏普，并把 `summary.md`、`equity.png`、`equity.csv` 写到 `reports/backtest_<strategy>_<symbol>/`。
 
 ## 三种模式
 
